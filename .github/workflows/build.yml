@@ -13,7 +13,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: '1.21'
 
       - name: Build MIPSLE Softfloat Binaries
         run: |
@@ -36,7 +36,8 @@ jobs:
               if [ "$APP_NAME" = "dion-joiner" ]; then BIN_NAME="headless-dion-joiner"; fi
 
               echo "Compiling $APP_NAME -> $BIN_NAME..."
-              (cd "$dir" && GOOS=linux GOARCH=mipsle GOMIPS=softfloat CGO_ENABLED=0 go build -ldflags="-s -w -extldflags '-static'" -tags netgo -o "$ROOT_DIR/build/$BIN_NAME" .)
+              # Понижаем версию go в go.mod «на лету» перед сборкой, чтобы избежать скачивания Go 1.26
+              (cd "$dir" && sed -i 's/^go 1\.[0-9]*/go 1.21/' go.mod && GOTOOLCHAIN=local GOOS=linux GOARCH=mipsle GOMIPS=softfloat CGO_ENABLED=0 go build -ldflags="-s -w" -tags netgo -o "$ROOT_DIR/build/$BIN_NAME" .)
             fi
           done
 
