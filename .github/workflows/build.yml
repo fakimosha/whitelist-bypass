@@ -20,28 +20,17 @@ jobs:
           ROOT_DIR=$(pwd)
           mkdir -p "$ROOT_DIR/build"
           
-          # Находим все директории с go.mod и собираем бинарники в них
-          find . -name "go.mod" -not -path "*/.*" | while read -r gomod; do
-            DIR=$(dirname "$gomod")
-            echo "=== Building in $DIR ==="
-            cd "$ROOT_DIR/$DIR"
-            
-            # Проверяем наличие cmd/ и собираем все подкоманды
-            if [ -d "cmd" ]; then
-              for cmd in cmd/*; do
-                if [ -d "$cmd" ]; then
-                  BIN_NAME=$(basename "$cmd")
-                  echo "Building $BIN_NAME..."
-                  GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o "$ROOT_DIR/build/$BIN_NAME" "./$cmd" || true
-                fi
-              done
+          # Заходим в директорию headless, где лежит go.mod
+          cd "$ROOT_DIR/headless"
+          
+          # Собираем все утилиты из headless/cmd/
+          for cmd in cmd/*; do
+            if [ -d "$cmd" ]; then
+              BIN_NAME=$(basename "$cmd")
+              echo "Building $BIN_NAME..."
+              GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o "$ROOT_DIR/build/$BIN_NAME" "./$cmd"
             fi
           done
-
-      - name: Check output
-        run: |
-          echo "Built binaries:"
-          ls -la build/
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
