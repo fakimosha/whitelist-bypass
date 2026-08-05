@@ -1,0 +1,34 @@
+name: Build Softfloat MIPS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Build MIPSLE Softfloat Binaries
+        run: |
+          mkdir -p build
+          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o build/headless-vk-bot ./cmd/headless-vk-bot
+          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o build/headless-telemost-creator ./cmd/headless-telemost-creator
+          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o build/headless-telemost-joiner ./cmd/headless-telemost-joiner
+          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o build/headless-vk-creator ./cmd/headless-vk-creator
+          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o build/headless-wbstream-creator ./cmd/headless-wbstream-creator
+          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o build/headless-wbstream-joiner ./cmd/headless-wbstream-joiner
+          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o build/headless-dion-creator ./cmd/headless-dion-creator
+          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o build/headless-dion-joiner ./cmd/headless-dion-joiner
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wlb-keenetic-softfloat
+          path: build/*
