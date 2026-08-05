@@ -20,22 +20,28 @@ jobs:
           ROOT_DIR=$(pwd)
           mkdir -p "$ROOT_DIR/build"
           
-          # Переходим в директорию headless
+          # Переходим в папку headless
           cd "$ROOT_DIR/headless"
           
-          # Собираем все бинарники из headless/cmd/
-          for cmd in cmd/*; do
-            if [ -d "$cmd" ]; then
-              BIN_NAME=$(basename "$cmd")
-              echo "Building $BIN_NAME..."
-              GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o "$ROOT_DIR/build/$BIN_NAME" "./$cmd"
+          # Заходим в каждую подпапку и собираем бинарник
+          for dir in */; do
+            if [ -f "${dir}go.mod" ]; then
+              APP_NAME=$(basename "$dir")
+              BIN_NAME="headless-${APP_NAME}"
+              # Для vk-bot имя будет headless-vk-bot, для telemost -> headless-telemost-creator и т.д.
+              if [ "$APP_NAME" = "vk-bot" ]; then BIN_NAME="headless-vk-bot"; fi
+              if [ "$APP_NAME" = "telemost" ]; then BIN_NAME="headless-telemost-creator"; fi
+              if [ "$APP_NAME" = "telemost-joiner" ]; then BIN_NAME="headless-telemost-joiner"; fi
+              if [ "$APP_NAME" = "vk" ]; then BIN_NAME="headless-vk-creator"; fi
+              if [ "$APP_NAME" = "wbstream" ]; then BIN_NAME="headless-wbstream-creator"; fi
+              if [ "$APP_NAME" = "wbstream-joiner" ]; then BIN_NAME="headless-wbstream-joiner"; fi
+              if [ "$APP_NAME" = "dion" ]; then BIN_NAME="headless-dion-creator"; fi
+              if [ "$APP_NAME" = "dion-joiner" ]; then BIN_NAME="headless-dion-joiner"; fi
+
+              echo "Compiling $APP_NAME -> $BIN_NAME..."
+              (cd "$dir" && GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o "$ROOT_DIR/build/$BIN_NAME" .)
             fi
           done
-
-      - name: Check output
-        run: |
-          echo "Built binaries:"
-          ls -la build/
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
