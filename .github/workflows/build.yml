@@ -36,7 +36,7 @@ jobs:
               if [ "$APP_NAME" = "dion-joiner" ]; then BIN_NAME="headless-dion-joiner"; fi
 
               echo "Compiling $APP_NAME -> $BIN_NAME..."
-              (cd "$dir" && GOOS=linux GOARCH=mipsle GOMIPS=softfloat GODEBUG=asyncpreemptoff=1 go build -ldflags="-s -w" -o "$ROOT_DIR/build/$BIN_NAME" .)
+              (cd "$dir" && GOTOOLCHAIN=local GOOS=linux GOARCH=mipsle GOMIPS=softfloat GODEBUG=asyncpreemptoff=1 go build -ldflags="-s -w" -o "$ROOT_DIR/build/$BIN_NAME" .)
             fi
           done
 
