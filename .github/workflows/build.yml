@@ -10,7 +10,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Go
+      - name: Set up Go 1.21
         uses: actions/setup-go@v5
         with:
           go-version: '1.21'
@@ -20,25 +20,28 @@ jobs:
           ROOT_DIR=$(pwd)
           mkdir -p "$ROOT_DIR/build"
           
+          # Заходим в headless и ищем все файлы go.mod
           cd "$ROOT_DIR/headless"
           
-          for dir in */; do
-            if [ -f "${dir}go.mod" ]; then
-              APP_NAME=$(basename "$dir")
-              BIN_NAME="headless-${APP_NAME}"
-              if [ "$APP_NAME" = "vk-bot" ]; then BIN_NAME="headless-vk-bot"; fi
-              if [ "$APP_NAME" = "telemost" ]; then BIN_NAME="headless-telemost-creator"; fi
-              if [ "$APP_NAME" = "telemost-joiner" ]; then BIN_NAME="headless-telemost-joiner"; fi
-              if [ "$APP_NAME" = "vk" ]; then BIN_NAME="headless-vk-creator"; fi
-              if [ "$APP_NAME" = "wbstream" ]; then BIN_NAME="headless-wbstream-creator"; fi
+          find . -name "go.mod" | while read -r gomod; do
+            dir=$(dirname "$gomod")
+            APP_NAME=$(basename "$dir")
+            
+            # Пропускаем корневую директорию, если там есть go.mod
+            if [ "$APP_NAME" = "." ]; then continue; fi
+            
+            BIN_NAME="headless-${APP_NAME}"
+            if [ "$APP_NAME" = "vk-bot" ]; then BIN_NAME="headless-vk-bot"; fi
+            if [ "$APP_NAME" = "telemost" ]; then BIN_NAME="headless-telemost-creator"; fi
+            if [ "$APP_NAME" = "telemost-joiner" ]; then BIN_NAME="headless-telemost-joiner"; fi
+            if [ "$APP_NAME" = "vk" ]; then BIN_NAME="headless-vk-creator"; fi
+            if [ "$APP_NAME" = "wbstream" ]; then BIN_NAME="headless-wbstream-creator"; fi
               if [ "$APP_NAME" = "wbstream-joiner" ]; then BIN_NAME="headless-wbstream-joiner"; fi
               if [ "$APP_NAME" = "dion" ]; then BIN_NAME="headless-dion-creator"; fi
               if [ "$APP_NAME" = "dion-joiner" ]; then BIN_NAME="headless-dion-joiner"; fi
 
-              echo "Compiling $APP_NAME -> $BIN_NAME..."
-              # Понижаем версию go в go.mod «на лету» перед сборкой, чтобы избежать скачивания Go 1.26
-              (cd "$dir" && sed -i 's/^go 1\.[0-9]*/go 1.21/' go.mod && GOTOOLCHAIN=local GOOS=linux GOARCH=mipsle GOMIPS=softfloat CGO_ENABLED=0 go build -ldflags="-s -w" -tags netgo -o "$ROOT_DIR/build/$BIN_NAME" .)
-            fi
+            echo "Compiling $APP_NAME -> $BIN_NAME..."
+            (cd "$dir" && GOTOOLCHAIN=local GOOS=linux GOARCH=mipsle GOMIPS=softfloat CGO_ENABLED=0 go build -compat=1.21 -ldflags="-s -w" -tags netgo -o "$ROOT_DIR/build/$BIN_NAME" .)
           done
 
       - name: Upload Artifact
