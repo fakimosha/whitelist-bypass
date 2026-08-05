@@ -1,4 +1,4 @@
-name: Build Softfloat MIPS
+name: Build Softfloat MIPSLE
 
 on:
   workflow_dispatch:
@@ -10,25 +10,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Go
+      - name: Set up Go 1.20
         uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: '1.20'
 
       - name: Build MIPSLE Softfloat Binaries
         run: |
           ROOT_DIR=$(pwd)
           mkdir -p "$ROOT_DIR/build"
           
-          # Переходим в папку headless
           cd "$ROOT_DIR/headless"
           
-          # Заходим в каждую подпапку и собираем бинарник
           for dir in */; do
             if [ -f "${dir}go.mod" ]; then
               APP_NAME=$(basename "$dir")
               BIN_NAME="headless-${APP_NAME}"
-              # Для vk-bot имя будет headless-vk-bot, для telemost -> headless-telemost-creator и т.д.
               if [ "$APP_NAME" = "vk-bot" ]; then BIN_NAME="headless-vk-bot"; fi
               if [ "$APP_NAME" = "telemost" ]; then BIN_NAME="headless-telemost-creator"; fi
               if [ "$APP_NAME" = "telemost-joiner" ]; then BIN_NAME="headless-telemost-joiner"; fi
@@ -39,7 +36,7 @@ jobs:
               if [ "$APP_NAME" = "dion-joiner" ]; then BIN_NAME="headless-dion-joiner"; fi
 
               echo "Compiling $APP_NAME -> $BIN_NAME..."
-              (cd "$dir" && GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o "$ROOT_DIR/build/$BIN_NAME" .)
+              (cd "$dir" && GOOS=linux GOARCH=mipsle GOMIPS=softfloat GODEBUG=asyncpreemptoff=1 go build -ldflags="-s -w" -o "$ROOT_DIR/build/$BIN_NAME" .)
             fi
           done
 
