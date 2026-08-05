@@ -18,14 +18,19 @@ jobs:
       - name: Build MIPSLE Softfloat Binaries
         run: |
           mkdir -p build
-          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o build/headless-vk-bot ./cmd/headless-vk-bot
-          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o build/headless-telemost-creator ./cmd/headless-telemost-creator
-          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o build/headless-telemost-joiner ./cmd/headless-telemost-joiner
-          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o build/headless-vk-creator ./cmd/headless-vk-creator
-          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o build/headless-wbstream-creator ./cmd/headless-wbstream-creator
-          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o build/headless-wbstream-joiner ./cmd/headless-wbstream-joiner
-          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o build/headless-dion-creator ./cmd/headless-dion-creator
-          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o build/headless-dion-joiner ./cmd/headless-dion-joiner
+          # Поиск директории с go.mod и сборка
+          GOMOD_DIR=$(dirname $(find . -maxdepth 3 -name "go.mod" | head -n 1))
+          echo "Found go.mod in $GOMOD_DIR"
+          cd "$GOMOD_DIR"
+          
+          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o ../build/headless-vk-bot ./cmd/headless-vk-bot || true
+          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o ../build/headless-telemost-creator ./cmd/headless-telemost-creator || true
+          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o ../build/headless-telemost-joiner ./cmd/headless-telemost-joiner || true
+          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o ../build/headless-vk-creator ./cmd/headless-vk-creator || true
+          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o ../build/headless-wbstream-creator ./cmd/headless-wbstream-creator || true
+          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o ../build/headless-wbstream-joiner ./cmd/headless-wbstream-joiner || true
+          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o ../build/headless-dion-creator ./cmd/headless-dion-creator || true
+          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o ../build/headless-dion-joiner ./cmd/headless-dion-joiner || true
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
